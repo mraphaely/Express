@@ -358,7 +358,7 @@ app.get("/funcionarios/:id", (request, response) => {
         response.status(200).json(funcionario);
     })
 });
-// (MVC) model view controller
+
 /**************** Rotas Clientes *********************/
 /* tabela (cliente_id, nome, email, created_at, updated_at)
    1° Listar todos os clientes
