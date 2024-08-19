@@ -1,4 +1,4 @@
-import connection from "../config/conn";
+import connection from "../config/conn.js";
 import { v4 as uuidv4 } from 'uuid';
 
 export const listarClientes = (request, response) => {
@@ -25,8 +25,9 @@ export const adicionarClientes = (request, response) => {
     if (!email.includes("@")) {
         return response.status(400).json({ message: "O email deve conter '@'" })
     }
-    const checkEmailSQL = /*sql*/`SELECT * FROM clientes WHERE email = "${email}"`
-    connection.query(checkEmailSQL, (err, data) => {
+    const checkEmailSQL = /*sql*/`SELECT * FROM clientes WHERE ?? = ?`
+    const checkData = ["email", email];
+    connection.query(checkEmailSQL, checkData, (err, data) => {
         if (err) {
             console.error(err);
             response.status(500).json({ err: "Erro ao verificar email" });
@@ -37,8 +38,11 @@ export const adicionarClientes = (request, response) => {
         }
 
         const id = uuidv4();
-        const insertSQL = /*sql*/`INSERT INTO clientes (cliente_id, nome, email)
-        VALUES ("${id}", "${nome}", "${email}")`
+        const insertSQL = /*sql*/`INSERT INTO clientes (??, ??, ??) VALUES (?, ?, ?)`
+        const insertData = [
+            "cliente_id", "nome", "email", "senha", "imagem",
+             id, nome, email, senha, imagem
+            ];//lembrar de terminar
         connection.query(insertSQL, (err, data) => {
             if (err) {
                 console.error(err);

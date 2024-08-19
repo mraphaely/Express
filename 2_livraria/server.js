@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express, { request, response } from "express";
+import express from "express";
 import mysql from "mysql2";
 import { v4 as uuidv4 } from "uuid";
 

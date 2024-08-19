@@ -1,4 +1,4 @@
-import connection from "../config/conn";
+import connection from "../config/conn.js";
 import { v4 as uuidv4 } from 'uuid';
 
 export const listarFuncionarios = (request, response) => {

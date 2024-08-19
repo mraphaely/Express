@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 //import controllers
-import { listarLivros, cadastrarLivros, buscarLivros, editarLivros, deletarLivros } from "../controllers/livrosController";
+import { listarLivros, cadastrarLivros, buscarLivros, editarLivros, deletarLivros } from "../controllers/livrosController.js";
 
 const router = Router();
 

@@ -1,7 +1,5 @@
 import connection from "../config/conn.js"
 
-const PORT = process.env.PORT;
-
 const tableLivros = /*sql*/ `
     CREATE TABLE IF NOT EXISTS livros(
         livro_id VARCHAR(60) PRIMARY KEY,
@@ -23,8 +21,4 @@ connection.query(tableLivros, (err, result, field) => {
         return
     }
     console.log('Tabela [livros] MySQL criada com sucesso!');
-
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
 });

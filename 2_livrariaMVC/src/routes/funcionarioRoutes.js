@@ -7,7 +7,7 @@
    5° Deletar um funcionário
 */
 import { Router } from "express";
-import { AdicionarFuncionarios, buscarFuncionarios, deletarFuncionarios, editarFuncionarios, listarFuncionarios } from "../controllers/funcionarioController";
+import { AdicionarFuncionarios, buscarFuncionarios, deletarFuncionarios, editarFuncionarios, listarFuncionarios } from "../controllers/funcionarioController.js";
 
 const router = Router();
 

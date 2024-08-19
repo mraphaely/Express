@@ -7,7 +7,7 @@
 5° Deletar um cliente
 */
 import { Router } from "express";
-import { adicionarClientes, buscarClientes, deletarClientes, editarClientes, listarClientes } from "../controllers/clienteController";
+import { adicionarClientes, buscarClientes, deletarClientes, editarClientes, listarClientes } from "../controllers/clienteController.js";
 
 const router = Router();
 
