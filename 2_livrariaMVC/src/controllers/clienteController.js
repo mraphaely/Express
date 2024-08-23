@@ -1,5 +1,6 @@
 import connection from "../config/conn.js";
 import { v4 as uuidv4 } from 'uuid';
+import { sign } from "jsonwebtoken";
 
 export const listarClientes = (request, response) => {
     const selectSQL = /*sql*/`SELECT * FROM clientes`
@@ -43,7 +44,7 @@ export const adicionarClientes = (request, response) => {
             "cliente_id", "nome", "email", "senha", "imagem",
              id, nome, email, senha, imagem
             ];//lembrar de terminar
-        connection.query(insertSQL, (err, data) => {
+        connection.query(insertSQL, insertData, (err, data) => {
             if (err) {
                 console.error(err);
                 response.status(500).json({ err: "Erro ao cadastrar cliente" });
@@ -66,8 +67,9 @@ export const editarClientes = (request, response) => {
     if (!email.includes("@")) {
         return response.status(400).json({ message: "O email deve conter '@'" })
     }
-    const CheckClienteSQL = /*sql*/`SELECT * FROM clientes WHERE cliente_id = "${id}"`
-    connection.query(CheckClienteSQL, (err, data) => {
+    const CheckClienteSQL = /*sql*/`SELECT * FROM clientes WHERE ?? = ?`
+    const checkData = ["cliente_id", id];
+    connection.query(CheckClienteSQL, checkData, (err, data) => {
         if (err) {
             console.error(err);
             response.status(500).json({ err: "Erro ao verificar cliente" });
@@ -77,8 +79,12 @@ export const editarClientes = (request, response) => {
             return response.status(404).json({ message: "Cliente não encontrado" })
         }
     });
-    const checkEmailSQL = /*sql*/`SELECT * FROM clientes WHERE email = "${email}" AND cliente_id != "${id}"`
-    connection.query(checkEmailSQL, (err, data) => {
+    const checkEmailSQL = /*sql*/`SELECT * FROM clientes WHERE ?? = ? AND ?? != ?`
+    const checkMail = [
+        "email", email,
+        "cliente_id", id
+    ];
+    connection.query(checkEmailSQL, checkMail, (err, data) => {
         if (err) {
             console.error(err)
             response.status(500).json({ err: "Erro ao procurar cliente" })
@@ -88,10 +94,14 @@ export const editarClientes = (request, response) => {
             response.status(409).json({ err: "Email já existe" });
         }
     });
-    const updateSQL = /*sql*/`UPDATE clientes SET nome = "${nome}", email = "${email}"
-    WHERE cliente_id = "${id}"
+    const updateSQL = /*sql*/`UPDATE clientes SET ?? = ?, ?? = ?
+    WHERE ?? = ?
     `
-    connection.query(updateSQL, (err, data) => {
+    const checkDate = [
+        "nome", "email", "cliente_id",
+         nome, email, id
+    ];
+    connection.query(updateSQL, checkDate, (err, data) => {
         if (err) {
             console.error(err);
             response.status(500).json({ err: "Erro ao atualizar cliente" });
@@ -103,9 +113,12 @@ export const editarClientes = (request, response) => {
 
 export const deletarClientes = (request, response) => {
     const { id } = request.params
-    const deleteClienteSQL = /*sql*/`DELETE FROM clientes WHERE cliente_id = "${id}"
+    const deleteClienteSQL = /*sql*/`DELETE FROM clientes WHERE ?? = ?
     `
-    connection.query(deleteClienteSQL, (err, info) => {
+    const checkDelete = [
+        "cliente_id", id
+    ];
+    connection.query(deleteClienteSQL, checkDelete, (err, info) => {
         if (err) {
             console.error(err);
             response.status(500).json({ err: "Erro ao deletar cliente" });
@@ -120,8 +133,11 @@ export const deletarClientes = (request, response) => {
 
 export const buscarClientes = (request, response) => {
     const { id } = request.params
-    const clienteSQL = /*sql*/`SELECT * FROM clientes WHERE cliente_id = "${id}"`
-    connection.query(clienteSQL, (err, data) => {
+    const clienteSQL = /*sql*/`SELECT * FROM clientes WHERE ?? = ?`
+    const checkCliente = [
+        "cliente_id", id
+    ]
+    connection.query(clienteSQL, checkCliente, (err, data) => {
         if (err) {
             console.error(err);
             response.status(500).json({ err: "Erro ao selecionar cliente" })
@@ -132,4 +148,35 @@ export const buscarClientes = (request, response) => {
 
     })
 
+};
+
+export const loginCliente = (request, response) => {
+  if(request.body.email && request.body.senha) {
+    let email = request.body.email; 
+    let senha = request.body.senha; 
+
+    const loginSQL = /*sql*/`SELECT cliente_id, nome, email, senha FROM clientes WHERE email = ? AND senha = ?`
+    const checkLogin = [email, senha];
+    connection.query(loginSQL, checkLogin, (err, data) => {
+        if (err) {
+            console.error(err);
+            response.status(500).json({ err: "Erro ao realizar login" });
+            return
+            }
+            if (data.length > 0) {
+                const user = results[0];
+
+                const token = JWT.sign(
+                    { id: user.cliente_id, email: user.email },
+                    process.env.SECRET_KEY,
+                    { expiresIn: '3h' }
+                )
+                response.status(200).json({ id: user.cliente_id, email: user.email, token });
+            }else {
+                response.status(404).json({ message: "Usuário não encontrado" });
+            }
+        });
+  } else {
+    response.status(400).json({ message: "Email e senha são obrigatórios" });
+  }
 };
