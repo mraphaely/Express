@@ -27,10 +27,19 @@ app.use(express.json())
 //utilizar rotas
 app.use("/users", userRouter)
 
-app.get("*", (request, response) => {
+app.use((request, response) => {
     response.status(404).json({ message: "Rota não encontrada." })
 });
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`)
 });
+
+/*
+usuario -> mini mundo 
+[POST] - cad. user
+[POST] - çogin
+[GET] - user logado
+[] -
+[] -
+*/
