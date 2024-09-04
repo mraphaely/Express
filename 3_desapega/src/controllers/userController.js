@@ -1,12 +1,12 @@
 import conn from "../config/connectionDB.js";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
-import { response } from "express";
 import jwt from "jsonwebtoken";
 
 //helpers
 import createUserToken from "../helpers/create-user-token.js";
 import getToken from "../helpers/get-token.js";
+import getUserByToken from "../helpers/get-user-by-token.js"
 
 export const register = (request, response) => {
     const { nome, email, telefone, senha, confirmaSenha } = request.body
@@ -67,27 +67,27 @@ export const register = (request, response) => {
                 console.log(err)
                 return response.status(500).json({ error: 'Erro ao cadastrar usuário' })
             }
-        //1° criar token
-        //2° passar o token para o front-end    
-        const userSql = /*sql*/`SELECT * FROM users WHERE ?? = ?` 
-        const userSqlData = ['user_id', id];
-        conn.query(userSql, userSqlData, async (err, data) => {
-            if (err) {
-                console.log(err)
-                return response.status(500).json({ error: 'Erro ao fazer login' })
-            }
-            const user = data[0]
+            //1° criar token
+            //2° passar o token para o front-end    
+            const userSql = /*sql*/`SELECT * FROM users WHERE ?? = ?`
+            const userSqlData = ['user_id', id];
+            conn.query(userSql, userSqlData, async (err, data) => {
+                if (err) {
+                    console.log(err)
+                    return response.status(500).json({ error: 'Erro ao fazer login' })
+                }
+                const user = data[0]
 
-            try{
-                await createUserToken(user, request, response)
-            } catch (error){ 
-                console.log(error)
-                response.status(500).json({ err: "Erro ao processar requisição"})
-            }
-        
-        })
+                try {
+                    await createUserToken(user, request, response)
+                } catch (error) {
+                    console.log(error)
+                    response.status(500).json({ err: "Erro ao processar requisição" })
+                }
+
+            })
             // response.status(201).json({ message: "Usuário cadastrado" })
-       })
+        })
     })
 };
 
@@ -102,7 +102,7 @@ export const login = (request, response) => {
 
     const checkEmailSql = /*sql*/`SELECT * FROM users WHERE ?? = ?`
     const checkEmailSqlData = ['email', email];
-    conn.query(checkEmailSql, checkEmailSqlData,  async (err, data) => {
+    conn.query(checkEmailSql, checkEmailSqlData, async (err, data) => {
         if (err) {
             console.log(err)
             return response.status(500).json({ error: 'Erro ao fazer login' })
@@ -117,18 +117,18 @@ export const login = (request, response) => {
         const comparaSenha = await bcrypt.compare(senha, user.senha)
         console.log("compara senha", comparaSenha)//boolean
 
-        if(!comparaSenha){
+        if (!comparaSenha) {
             return response.status(401).json({ error: 'Senha inválida' })
         }
 
         //1 criar um token
-        try{
+        try {
             await createUserToken(user, request, response)
         } catch (error) {
             console.log(error)
-            response.status(500).json({ err: "Erro ao processar informações"})
+            response.status(500).json({ err: "Erro ao processar informações" })
         }
-        response.status(200).json( {message: "Você está logado."} )
+        response.status(200).json({ message: "Você está logado." })
     })
 
 };
@@ -136,31 +136,59 @@ export const login = (request, response) => {
 // checkUser -> verificar os users logados na aplicação
 export const checkUser = async (request, response) => {
     let userAtual;
-    if(request.headers.authorization){
-       //extrair o token -> barear TOKEN
-       const token = getToken(request)
-       console.log(token)
-      //descriptografar o token jwt.decode
-      const decoded = jwt.decode(token, "SENHASUPERSEGURA")
-      console.log(decoded)
+    if (request.headers.authorization) {
+        //extrair o token -> barear TOKEN
+        const token = getToken(request)
+        console.log(token)
+        //descriptografar o token jwt.decode
+        const decoded = jwt.decode(token, "SENHASUPERSEGURA")
+        console.log(decoded)
 
-      const userId = decoded.id
-      const selectSql = /*sql*/`SELECT nome, email, telefone, imagem FROM users WHERE ?? = ?`
-      const selectSqlData = ['user_id', userId];
-      conn.query(selectSql, selectSqlData, async (err, data) => {
-        if(err){
-            console.log(err)
-            return response.status(500).json({ error: 'Erro ao verificar usuário' })
-        }
-        userAtual = data[0]
-        response.status(200).json(userAtual)
-      })
-    }else{
+        const userId = decoded.id
+        const selectSql = /*sql*/`SELECT nome, email, telefone, imagem FROM users WHERE ?? = ?`
+        const selectSqlData = ['user_id', userId];
+        conn.query(selectSql, selectSqlData, async (err, data) => {
+            if (err) {
+                console.log(err)
+                return response.status(500).json({ error: 'Erro ao verificar usuário' })
+            }
+            userAtual = data[0]
+            response.status(200).json(userAtual)
+        })
+    } else {
         userAtual = null
         response.status(200).json(userAtual)
     }
 }
 // getUserById -> verificar user
-export const getUserById = async (request, response) => {}
+export const getUserById = async (request, response) => {
+    const id = request.params.id
+
+    const userId = /*sql*/` SELECT user_id, nome, email, telefone, imagem FROM users WHERE ?? = ?`
+    const checkUserId = ["user_id", id];
+
+    conn.query(userId, checkUserId, (err, data) => {
+        if (err) {
+            console.log(err)
+            return response.status(500).json({ error: 'Erro ao buscar usuário' })
+        }
+
+        if (data.length === 0) {
+            return response.status(404).json({ message: 'Usuário não encontrado' })
+        }
+
+        const user = data[0]
+        response.status(200).json(user)
+    })
+}
 // editUser -> controlador protegido, contém imagem de user
-export const editUser = async (request, response) => {}
+export const editUser = async (request, response) => {
+    const id = request.params.id
+
+    try{
+        const token = getToken(request)
+        const user = await getUserByToken(token)
+    
+        console.log(user)
+    } catch (error) {}
+}
