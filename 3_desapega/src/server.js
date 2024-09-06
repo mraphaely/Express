@@ -12,9 +12,11 @@ import conn from "./config/connectionDB.js";
 
 //importar modulos
 import "./models/userModel.js"
+import "./models/productModel.js"
 
 //importar as rotas
 import userRouter from "./routes/userRouter.js";
+import productRouter from "./routes/productRouter.js";
 
 const PORT = process.env.PORT || 3333
 const app = express()
@@ -26,6 +28,7 @@ app.use(express.json())
 
 //utilizar rotas
 app.use("/users", userRouter)
+app.use("/products", productRouter)
 
 app.use((request, response) => {
     response.status(404).json({ message: "Rota não encontrada." })

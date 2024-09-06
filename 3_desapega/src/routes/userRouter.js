@@ -12,4 +12,5 @@ router.get("/checkUser", checkUser);
 router.get("/userbyid/:id", getUserById);
 router.put("/edit/:id", verifyToken, editUser);
 
+
 export default router;
