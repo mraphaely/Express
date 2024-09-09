@@ -185,11 +185,66 @@ export const getUserById = async (request, response) => {
 export const editUser = async (request, response) => {
     const id = request.params.id
 
-    try{
+    try {
         const token = getToken(request)
+        // console.log(token);
         const user = await getUserByToken(token)
-    
-        console.log(user)
-    } catch (error) {}
+        // console.log(user);
+
+        const { nome, email, telefone } = request.body
+        let imagem = user.imagem
+        if (request.file) {
+            imagem = request.file.filename
+        }
+        if (!nome) {
+            return response.status(400).json({ message: "O nome é obrigatório." })
+        }
+        if (!email) {
+            return response.status(400).json({ message: "O email é obrigatório." })
+        }
+        if (!telefone) {
+            return response.status(400).json({ message: "O telefone é obrigatório." })
+        }
+        //1° verificar se o user existe
+        const checkSQL = /*sql*/`SELECT * FROM users WHERE ?? = ?`
+        const checkSqlId = ["user_id", id];
+        conn.query(checkSQL, checkSqlId, (err, data) => {
+            if (err) {
+                console.log(err)
+                return response.status(500).json({ error: 'Erro ao verificar usuário para update' })
+            }
+            if (data.length === 0) {
+                return response.status(404).json({ message: 'Usuário não encontrado' })
+            }
+        });
+        //2° evitar user com email repetido
+        const checkEmailSql = /*sql*/`SELECT * FROM users WHERE ?? = ? AND ?? != ?`
+        const checkEmailSqlId = ["email", email, "user_id", id];
+        conn.query(checkEmailSql, checkEmailSqlId, (err, data) => {
+            if (err) {
+                console.log(err)
+                return response.status(500).json({ error: 'Erro ao verificar usuário para update' })
+            }
+            if (data.length > 0) {
+                return response.status(409).json({ message: 'Email já está em uso!' })
+            }
+        });
+        //3° atualizar user {nome:nome} === {nome}
+        const updateSql = /*sql*/`UPDATE users SET ? WHERE ?? = ?`
+        const updateSqlId = [{ nome, email, telefone, imagem }, "user_id", id];
+        conn.query(updateSql, updateSqlId, (err, data) => {
+            if (err) {
+                console.log(err)
+                return response.status(500).json({ error: 'Erro ao atualizar usuário' })
+            }
+            return response.status(200).json({ message: 'Usuário atualizado com sucesso!' })
+        })
+
+        console.log(nome, email, telefone)
+
+    } catch (error) {
+        console.log(error)
+        response.status(500).json("Erro interno do servidor");
+    }
 }
 

@@ -6,7 +6,7 @@ import verifyToken from "../helpers/verify-token.js"
 
 const router = Router();
 
-router.post("/cadastroproduto", verifyToken,cadastroProduto);
+router.post("/cadastroproduto", verifyToken, cadastroProduto);
 router.get("/listarproduto", listarProdutos);
 
 export default router;

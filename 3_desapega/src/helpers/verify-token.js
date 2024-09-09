@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import getToken from "./get-token.js";
 
 const checkToken = (request, response, next) => {
-    if (request.headers.authorization) {
+    if (!request.headers.authorization) {
       return response.status(401).json( {message: "Acesso negado"} )
     }
 

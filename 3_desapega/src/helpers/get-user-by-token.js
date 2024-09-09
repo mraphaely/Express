@@ -8,18 +8,19 @@ const getUserByToken = async (token) => {
         }
 
         const decoded = jwt.verify(token, "SENHASUPERSEGURA")
-        const userId = decoded.id
+        const userId = decoded.id;
+        
 
         const checkSql = /*sql*/`SELECT * FROM users WHERE ?? = ?`
         const checkSqlData = ["user_id", userId]
         conn.query(checkSql, checkSqlData, (err, data) => {
             if (err) {
-                return response.status(500).json({ message: "Erro ao buscar usuário" })
+                reject ({ status: 500, message: "Erro ao buscar usuário" });
             } else {
                 resolve(data[0]);
             }
-        })
-    })
-}
+        });
+    });
+};
 
-export default getUserByToken
+export default getUserByToken;
