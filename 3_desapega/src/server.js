@@ -15,11 +15,14 @@ import conn from "./config/connectionDB.js";
 
 //importar modulos
 import "./models/userModel.js";
-import "./models/productModel.js";
+import "./models/objetoModel.js";
+import "./models/objetoImagesModel.js"
+// import "./models/productModel.js";
 
 //importar as rotas
 import userRouter from "./routes/userRouter.js";
-import productRouter from "./routes/productRouter.js";
+import objetoRouter from "./routes/objetoRouter.js";
+// import productRouter from "./routes/productRouter.js";
 
 const PORT = process.env.PORT || 3333;
 const app = express();
@@ -40,7 +43,8 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 
 //utilizar rotas
 app.use("/users", userRouter);
-app.use("/products", productRouter);
+app.use("/objetos", objetoRouter);
+// app.use("/products", productRouter);
 
 app.use((request, response) => {
     response.status(404).json({ message: "Rota não encontrada." });
