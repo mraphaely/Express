@@ -193,9 +193,11 @@ export const editUser = async (request, response) => {
 
         const { nome, email, telefone } = request.body
         let imagem = user.imagem
+        // console.log('Antes: ', imagem)
         if (request.file) {
             imagem = request.file.filename
         }
+        // console.log('Depois: ', imagem)
         if (!nome) {
             return response.status(400).json({ message: "O nome é obrigatório." })
         }

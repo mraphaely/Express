@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import verifyToken from "../helpers/verify-token.js";
 import getUserByToken from "../helpers/get-user-by-token.js";
 import getToken from "../helpers/get-token.js";
+import { response } from "express";
 
 export const create = async (request, response) => {
     const { nome, categoria, peso, cor, descricao, preco } = request.body;
@@ -40,7 +41,7 @@ export const create = async (request, response) => {
 
     const objetoValues = [
         "objeto_id", "nome", "categoria", "peso", "cor", "descricao", "disponivel", "preco", "user_id",
-           objeto_id, nome, categoria, peso, cor, descricao, disponivel, preco, user_id
+        objeto_id, nome, categoria, peso, cor, descricao, disponivel, preco, user_id
     ];
 
     conn.query(objetoSql, objetoValues, (err) => {
@@ -74,3 +75,40 @@ export const create = async (request, response) => {
 };
 
 //Listar todos os obj de um user
+export const getAllObjectUser = async (request, response) => {
+    try {
+        const token = getToken(request);
+        const user = await getUserByToken(token);
+
+        const userId = user.user_id
+
+        const selectSql = /*sql*/`SELECT 
+                           obj.objeto_id,
+                           obj.user_id,
+                           obj.nome,
+                           obj.categoria,
+                           obj.peso,
+                           obj.cor,
+                           obj.descricao,
+                           obj.preco,
+                           GROUP_CONCAT(obj_img.image_path SEPARATOR ',') AS image_paths
+                           FROM
+                           objetos AS obj
+                           LEFT JOIN
+                           objeto_images AS obj_img ON obj.objeto_id = obj_img.objeto_id
+                           WHERE 
+                           obj.user_id = ? 
+                           GROUP BY 
+                           obj.objeto_id, obj.user_id, obj.nome, obj.categoria, obj.descricao, obj.preco
+                         `;
+        conn.query(selectSql, [userId], (err, data) => {
+            if (err) {
+                console.error(err);
+                return response.status(500).json({ err: "Não foi possível listar objetos do usuário"});
+            }
+            response.status(200).json(data);
+        });
+    } catch (error) {
+
+    }
+}
